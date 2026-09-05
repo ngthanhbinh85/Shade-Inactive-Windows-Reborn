@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.shade-inactive-windows-reborn-binhnguyensoft-com" path="/org/gnome/shell/extensions/shade-inactive-windows-reborn-binhnguyensoft-com/">
+    <key name="shade-percent" type="i">
+      <range min="10" max="80"/>
+      <default>30</default>
+      <summary>Inactive window darkness</summary>
+      <description>Brightness reduction of inactive windows (in percentage).</description>
+    </key>
+    <key name="fade-duration" type="i">
+      <range min="0" max="1000"/>
+      <default>200</default>
+      <summary>Fade duration</summary>
+      <description>
+        Duration of the brightness transition when a window gains or loses focus (in milliseconds).
+      </description>
+    </key>
+    <key name="excluded-apps" type="as">
+      <default>[]</default>
+      <summary>Excluded applications</summary>
+      <description>
+        App IDs or WM_CLASS identifiers for applications that should not be shaded.
+      </description>
+    </key>
+  </schema>
+</schemalist>
