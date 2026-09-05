@@ -1,0 +1,9 @@
+{
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "uuid": "shade-inactive-windows-reborn@binhnguyensoft.com",
+  "name": "Shade Inactive Windows Reborn",
+  "description": "Shades inactive windows. Rewritten and modernized version inspired by the original Shade Inactive Windows extension by hepaajan.",
+  "settings-schema": "org.gnome.shell.extensions.shade-inactive-windows-reborn-binhnguyensoft-com",
+  "url": "https://github.com/ngthanhbinh85/shade-inactive-windows-reborn",
+  "version-name": "1.0"
+}
