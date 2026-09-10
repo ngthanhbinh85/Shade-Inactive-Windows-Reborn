@@ -14,19 +14,34 @@
 
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=4.0';
+import Pango from 'gi://Pango'; // for shorten long app name
 
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
+// For Excluded apps
+const AppItemForExclusion = GObject.registerClass({
+    Properties: {
+        name: GObject.ParamSpec.string('name', null, null, GObject.ParamFlags.READWRITE, ''),
+    },
+}, class AppItemForExclusion extends GObject.Object {
+    _init(info) {
+        super._init({name: info.get_display_name() || info.get_name()});
+        this.id = info.get_id();
+        this.icon = info.get_icon();
+    }
+});
+
 export default class ShadeInactiveWindowsPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
-        window.set_default_size(800, -1);
+        window.set_default_size(700, 700);
         this._settings = this.getSettings();
-        this._excludedGroup = null;
-        this._appEntries = this._getInstalledApps();
+        this._renderedExcludedApps = [];
+        this._installedApps = this._getInstalledApps();
 
         const page = new Adw.PreferencesPage({
-            title: 'Shade Inactive Windows Reborn',
+            title: this.metadata.name + "*",
             icon_name: 'preferences-desktop-display-symbolic',
         });
 
@@ -35,50 +50,48 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
             title: 'Shading',
             description: 'Adjust how inactive windows are shaded.',
         });
+        
+        // Shade level
+        // Title & subtitle get from schemas
+        const shadingKey = this._settings.settings_schema.get_key('shade-level');
 
         const shadeAdjustment = new Gtk.Adjustment({
             lower: 10,
             upper: 80,
             step_increment: 5,
-            value: this._settings.get_int('shade-percent'),
         });
 
         const shadeRow = new Adw.SpinRow({
-            title: 'Shade level',
-            subtitle: 'Brightness reduction in percent (10 = slightly dark, 80 = very dark).',
+            title: shadingKey.get_summary(),
+            subtitle: shadingKey.get_description(),
             adjustment: shadeAdjustment,
             digits: 0,
             numeric: true,
             snap_to_ticks: true,
         });
 
-        shadeRow.connect('notify::value', row => {
-            const value = Math.round(row.get_value());
-            if (this._settings.get_int('shade-percent') !== value)
-                this._settings.set_int('shade-percent', value);
-        });
+        this._settings.bind('shade-level', shadeAdjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
 
+        // Fade Duration
+        // Title & subtitle get from schemas
+        const fadeKey = this._settings.settings_schema.get_key('fade-duration');
+        
         const fadeAdjustment = new Gtk.Adjustment({
             lower: 0,
             upper: 1000,
             step_increment: 100,
-            value: this._settings.get_int('fade-duration'),
         });
 
         const fadeRow = new Adw.SpinRow({
-            title: 'Fade duration',
-            subtitle: 'Transition time in milliseconds (0 = instant)',
+            title: fadeKey.get_summary(),
+            subtitle: fadeKey.get_description(),
             adjustment: fadeAdjustment,
             digits: 0,
             numeric: true,
             snap_to_ticks: true,
         });
 
-        fadeRow.connect('notify::value', row => {
-            const value = Math.round(row.get_value());
-            if (this._settings.get_int('fade-duration') !== value)
-                this._settings.set_int('fade-duration', value);
-        });
+        this._settings.bind('fade-duration', fadeAdjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         shadingGroup.add(shadeRow);
         shadingGroup.add(fadeRow);
@@ -86,60 +99,28 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
 
         // Excluded apps
         const exclusionsGroup = new Adw.PreferencesGroup({
-            title: 'Excluded apps',
+            title: this._settings.settings_schema.get_key('excluded-apps').get_summary(),
             description: 'These apps remain at normal brightness even when inactive. Useful for media players, image viewers, or reference documents.',
         });
         this._excludedGroup = exclusionsGroup;
 
-        if (this._appEntries.length > 0) {
+        // List installed apps in a dropdown (icons and names only)
+        if (this._installedApps.length > 0) {
         
-            const appLabels = this._appEntries.map(
-                entry => `${entry.name} — ${entry.id}`
-            );
-
-            const appModel = Gtk.StringList.new(appLabels);
-
-            const appRow = new Adw.PreferencesRow({
-                activatable: false,
-                selectable: false,
-            });
-
-            const appBox = new Gtk.Box({
-                orientation: Gtk.Orientation.VERTICAL,
-                spacing: 8,
-                margin_top: 10,
-                margin_bottom: 10,
-                margin_start: 12,
-                margin_end: 12,
-            });
-
-            const titleLabel = new Gtk.Label({
-                label: 'Installed apps',
-                xalign: 0,
-            });
-            titleLabel.add_css_class('heading');
-
-            const subtitleLabel = new Gtk.Label({
-                label: 'Choose an app, then add it to the exclusion list.',
-                xalign: 0,
-            });
-
-            const controlsBox = new Gtk.Box({
-                spacing: 6,
-            });
-            
-            const appSearchExpression = Gtk.PropertyExpression.new(
-                Gtk.StringObject,
-                null,
-                'string'
-            );
+            const model = new Gio.ListStore({item_type: AppItemForExclusion});
+            for (const entry of this._installedApps)
+                model.append(entry);
 
             const appDropDown = new Gtk.DropDown({
-                model: appModel,
-                expression: appSearchExpression,
+                model: model,
+                expression: Gtk.PropertyExpression.new(AppItemForExclusion, null, 'name'),
+                factory: this._createAppFactory(),
+                list_factory: this._createAppFactory(),
                 enable_search: true,
-                search_match_mode: Gtk.StringFilterMatchMode.SUBSTRING,
-                hexpand: true,
+                valign: Gtk.Align.CENTER,
+                width_request: 300,
+                hexpand: false,
+                halign: Gtk.Align.END,
             });
 
             const addButton = new Gtk.Button({
@@ -147,26 +128,15 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
                 tooltip_text: 'Add selected app',
                 valign: Gtk.Align.CENTER,
             });
-            addButton.add_css_class('flat');
-
-            controlsBox.append(appDropDown);
-            controlsBox.append(addButton);
-
-            appBox.append(titleLabel);
-            appBox.append(subtitleLabel);
-            appBox.append(controlsBox);
-
-            appRow.set_child(appBox);
-
             addButton.connect('clicked', () => {
-                const index = appDropDown.get_selected();
-
-                if (index >= this._appEntries.length)
-                    return;
-
-                this._addExcludedIdentifier(this._appEntries[index].id);
+                const entry = appDropDown.get_selected_item();
+                if (entry)
+                    this._addExcludedIdentifier(entry.id);
             });
 
+            const appRow = new Adw.ActionRow({title: 'Installed apps'});
+            appRow.add_suffix(appDropDown);
+            appRow.add_suffix(addButton);
             exclusionsGroup.add(appRow);
         }
 
@@ -188,7 +158,6 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
             tooltip_text: 'How to find an app ID or WM_CLASS',
             valign: Gtk.Align.CENTER,
         });
-        helpButton.add_css_class('flat');
         helpButton.add_css_class('circular');
 
         helpButton.connect('clicked', () => {
@@ -196,14 +165,20 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
                 transient_for: window,
                 modal: true,
                 heading: 'Finding an app ID or WM_CLASS',
-                body:
-                    'Desktop app ID: Use the app’s .desktop filename. ' +
-                    'You can find it in:\n' +
-                    '   • /usr/share/applications\n' +
-                    '   • ~/.local/share/applications\n\n' +
-                    '   Example: org.mozilla.firefox.desktop\n\n' +
-                    'WM_CLASS on X11 or XWayland: Run “xprop WM_CLASS” in Terminal, then click the target window.\n\n' +
-                    'Wayland: Press Alt+F2, enter “lg”, open the Windows section, and find the app ID or WM_CLASS.',
+                extra_child: new Gtk.Label({
+                    xalign: 0,
+                    justify: Gtk.Justification.LEFT,
+                    wrap: true,
+                    selectable: true,
+                    label:
+                        'Desktop app ID: Use the app’s .desktop filename. ' +
+                        'You can find it in:\n\n' +
+                        '   ~/.local/share/applications\n' +
+                        '   /usr/share/applications\n\n' +
+                        '   Example: org.mozilla.firefox.desktop\n\n' +
+                        'WM_CLASS on X11 or XWayland: Run “xprop WM_CLASS” in Terminal, then click the target window.\n\n' +
+                        'Wayland: Press Alt+F2, enter “lg”, open the Windows section, and find the app ID or WM_CLASS.',
+                }),
             });
 
             dialog.add_response('close', 'Close');
@@ -217,7 +192,6 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
             tooltip_text: 'Add custom identifier',
             valign: Gtk.Align.CENTER,
         });
-        customAddButton.add_css_class('flat');
 
         customRow.add_suffix(helpButton);
         customRow.add_suffix(customEntry);
@@ -240,13 +214,22 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
         this._renderExcludedRows();
         page.add(exclusionsGroup);
         window.add(page);
-        this._addAboutButton(window);
-
+        
         // Keep the list synchronized if GSettings is changed externally.
         this._settingsChangedId = this._settings.connect('changed::excluded-apps', () => {
             this._renderExcludedRows();
         });
+        
+        
+        // About
+        const aboutGroup = new Adw.PreferencesGroup();
+        const aboutRow = new Adw.ActionRow({title: 'About', activatable: true});
+        aboutRow.add_suffix(new Gtk.Image({icon_name: 'help-about-symbolic'}));
+        aboutRow.connect('activated', () => this._showAbout(window));
+        aboutGroup.add(aboutRow);
+        page.add(aboutGroup);
 
+  
         window.connect('close-request', () => {
             if (this._settingsChangedId) {
                 this._settings.disconnect(this._settingsChangedId);
@@ -256,75 +239,43 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
         });
     }
 
-    _addAboutButton(window) {
-        const headerBar = this._findHeaderBar(window);
-        if (!headerBar)
-            return;
-
-        const aboutButton = new Gtk.Button({
-            icon_name: 'open-menu-symbolic',
-            tooltip_text: 'About',
-            valign: Gtk.Align.CENTER,
+    _createAppFactory() {
+        const factory = new Gtk.SignalListItemFactory();
+        factory.connect('setup', (_factory, item) => {
+            const box = new Gtk.Box({spacing: 8});
+            box.append(new Gtk.Image({pixel_size: 24}));
+            box.append(new Gtk.Label({
+                xalign: 0,
+                hexpand: true,
+                ellipsize: Pango.EllipsizeMode.END, // shorten text
+                max_width_chars: 24,
+            }));
+            item.set_child(box);
         });
-        aboutButton.add_css_class('flat');
-        aboutButton.connect('clicked', () => this._showAbout(window));
-
-        headerBar.pack_end(aboutButton);
-    }
-
-    _findHeaderBar(widget) {
-        if (widget instanceof Adw.HeaderBar)
-            return widget;
-
-        for (let child = widget.get_first_child(); child;
-            child = child.get_next_sibling()) {
-            const headerBar = this._findHeaderBar(child);
-            if (headerBar)
-                return headerBar;
-        }
-
-        return null;
+        factory.connect('bind', (_factory, item) => {
+            const entry = item.get_item();
+            const box = item.get_child();
+            box.get_first_child().set_from_gicon(
+                entry.icon ?? new Gio.ThemedIcon({name: 'application-x-executable'}));
+            box.get_last_child().set_label(entry.name);
+        });
+        return factory;
     }
 
     _showAbout(window) {
-        const params = {
+        const about = new Adw.AboutWindow({
             application_name: this.metadata.name,
             developer_name: 'Binh Nguyen',
             version: this.metadata['version-name'],
-            comments: 'Rewritten and modernized version inspired by the original Shade Inactive Windows extension by hepaajan.',
+            comments: 'Inspired by Shade Inactive Windows by hepaajan.',
             website: this.metadata.url,
             issue_url: `${this.metadata.url}/issues`,
-        };
-
-
-        if (Adw.AboutDialog) {
-            const about = new Adw.AboutDialog(params);
-            about.add_link(
-                'Developer website',
-                'https://www.binhnguyensoft.com'
-            );
-            about.add_link(
-                'Original project',
-                'https://github.com/hepaajan/shade-inactive-windows'
-            );
-            about.present(window);
-        } else {
-            const about = new Adw.AboutWindow({
-                ...params,
-                transient_for: window,
-                modal: true,
-            });
-            about.add_link(
-                'Developer website',
-                'https://www.binhnguyensoft.com'
-            );
-            about.add_link(
-                'Original project',
-                'https://github.com/hepaajan/shade-inactive-windows'
-            );
-            about.present();
-        }
-        
+            transient_for: window,
+            modal: true,
+        });
+        about.add_link('Developer website', 'https://www.binhnguyensoft.com');
+        about.add_link('Original project', 'https://github.com/hepaajan/shade-inactive-windows');
+        about.present();
     }
 
     _getInstalledApps() {
@@ -336,17 +287,12 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
             if (!id || seen.has(id) || !appInfo.should_show())
                 continue;
 
-            const name = appInfo.get_display_name() || appInfo.get_name() || id;
             seen.add(id);
-            apps.push({id, name});
+            apps.push(new AppItemForExclusion(appInfo));
         }
 
         apps.sort((a, b) => a.name.localeCompare(b.name));
         return apps;
-    }
-
-    _normalizeIdentifier(value) {
-        return value.trim();
     }
 
     _getExcludedIdentifiers() {
@@ -354,7 +300,7 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
         const seen = new Set();
 
         for (const value of this._settings.get_strv('excluded-apps')) {
-            const normalized = this._normalizeIdentifier(value);
+            const normalized = value.trim();
             const key = normalized.toLowerCase();
             if (!normalized || seen.has(key))
                 continue;
@@ -367,7 +313,7 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
     }
 
     _addExcludedIdentifier(value) {
-        const identifier = this._normalizeIdentifier(value);
+        const identifier = value.trim();
         if (!identifier)
             return;
 
@@ -387,34 +333,30 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
         this._settings.set_strv('excluded-apps', values);
     }
 
-    // Resolves an excluded app ID to a display name, falling back to the ID
-    // Called by _renderExcludedRows() when displaying excluded apps.
-    _getFriendlyName(identifier) {
-        const info = Gio.DesktopAppInfo.new(identifier);
-        if (info)
-            return info.get_display_name() || info.get_name() || identifier;
+    _getAppDetails(identifier) {
+        const match = this._installedApps.find(entry =>
+            entry.id.toLowerCase() === identifier.toLowerCase());
+        if (match)
+            return match;
 
-        const key = identifier.toLowerCase();
-        const match = this._appEntries.find(entry => entry.id.toLowerCase() === key);
-        return match?.name || identifier;
+        const info = Gio.DesktopAppInfo.new(identifier);
+        return info ? new AppItemForExclusion(info) : {
+            name: identifier.replace(/\.desktop$/i, ''),
+            icon: null,
+        };
     }
 
     _renderExcludedRows() {
-        if (!this._excludedGroup)
-            return;
+        for (const row of this._renderedExcludedApps)
+            this._excludedGroup.remove(row);
 
-        if (this._renderedRows) {
-            for (const row of this._renderedRows)
-                this._excludedGroup.remove(row);
-        }
-
-        this._renderedRows = [];
+        this._renderedExcludedApps = [];
 
         for (const identifier of this._getExcludedIdentifiers()) {
-            const friendlyName = this._getFriendlyName(identifier);
+            const app = this._getAppDetails(identifier);
             const row = new Adw.ActionRow({
-                title: friendlyName,
-                subtitle: friendlyName === identifier ? 'Custom identifier' : identifier,
+                title: app.name,
+                use_markup: false,
             });
 
             const removeButton = new Gtk.Button({
@@ -422,13 +364,16 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
                 tooltip_text: 'Remove from exclusions',
                 valign: Gtk.Align.CENTER,
             });
-            removeButton.add_css_class('flat');
             removeButton.connect('clicked', () => this._removeExcludedIdentifier(identifier));
 
+            row.add_prefix(new Gtk.Image({
+                gicon: app.icon ?? new Gio.ThemedIcon({name: 'application-x-executable'}),
+                pixel_size: 24,
+            }));
             row.add_suffix(removeButton);
             row.activatable_widget = removeButton;
             this._excludedGroup.add(row);
-            this._renderedRows.push(row);
+            this._renderedExcludedApps.push(row);
         }
     }
 }

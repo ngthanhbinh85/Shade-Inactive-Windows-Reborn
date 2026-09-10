@@ -36,23 +36,19 @@ class PreviewSafeBrightnessEffect extends Clutter.BrightnessContrastEffect {
 
 export default class ShadeInactiveWindowsExtension extends Extension {
     enable() {
-        this._windows = new Map();
+        this._actors = new Map();
         this._signals = [];
-        this._settingsSignals = [];
         this._excludedApps = new Set();
         this._windowTracker = Shell.WindowTracker.get_default();
 
         this._settings = this.getSettings();
         this._reloadExcludedApps();
 
-        this._settingsSignals.push(
-            this._settings.connect('changed::shade-percent', () => this._refresh(true)),
-            this._settings.connect('changed::fade-duration', () => this._refresh(true)),
-            this._settings.connect('changed::excluded-apps', () => {
+        this._connect(this._settings, 'changed', (_settings, key) => {
+            if (key === 'excluded-apps')
                 this._reloadExcludedApps();
-                this._refresh(true);
-            })
-        );
+            this._refresh(true);
+        });
 
         this._connect(global.display, 'notify::focus-window', () => {
             this._refresh();
@@ -72,23 +68,17 @@ export default class ShadeInactiveWindowsExtension extends Extension {
     }
 
     disable() {
-        // Stop incoming callbacks before touching actors/effects.
-        for (const id of this._settingsSignals)
-            this._settings.disconnect(id);
-
-        this._settingsSignals = null;
-        this._settings = null;
-
         for (const [object, id] of this._signals)
             object.disconnect(id);
 
         this._signals = null;
+        this._settings = null;
 
-        for (const [actor, state] of this._windows)
+        for (const [actor, state] of this._actors)
             this._removeState(actor, state);
 
-        this._windows.clear();
-        this._windows = null;
+        this._actors.clear();
+        this._actors = null;
 
         this._excludedApps.clear();
         this._excludedApps = null;
@@ -118,7 +108,7 @@ export default class ShadeInactiveWindowsExtension extends Extension {
     }
 
     _refresh(force = false) {
-        if (!this._windows)
+        if (!this._actors)
             return;
 
         const liveActors = new Set();
@@ -141,8 +131,8 @@ export default class ShadeInactiveWindowsExtension extends Extension {
             this._setActorInactive(actor, inactive, force);
         }
 
-        // Defensive cleanup if a destroy signal was missed.
-        for (const actor of [...this._windows.keys()]) {
+        // Remove effects from actors no longer managed by this extension.
+        for (const actor of [...this._actors.keys()]) {
             if (!liveActors.has(actor))
                 this._forgetActor(actor);
         }
@@ -198,12 +188,10 @@ export default class ShadeInactiveWindowsExtension extends Extension {
 
     _setActorInactive(actor, inactive, force = false) {
         const state = this._ensureState(actor);
-        const shadePercent = this._settings.get_int('shade-percent');
+        const shadePercent = this._settings.get_int('shade-level');
         const target = inactive ? -(shadePercent / 100.0) : 0.0;
 
-        // Repeated map/focus notifications with the same destination should
-        // not restart the animation. A settings change may deliberately force
-        // recalculation even when focus state did not change.
+        // Skip if the target brightness is unchanged unless an update is forced.
         if (!force && state.target === target)
             return;
 
@@ -211,7 +199,7 @@ export default class ShadeInactiveWindowsExtension extends Extension {
     }
 
     _ensureState(actor) {
-        let state = this._windows.get(actor);
+        let state = this._actors.get(actor);
         if (state)
             return state;
 
@@ -226,9 +214,10 @@ export default class ShadeInactiveWindowsExtension extends Extension {
             frameSignal: 0,
             completedSignal: 0,
             target: null,
+            destroySignal: actor.connect('destroy', () => this._forgetActor(actor)),
         };
 
-        this._windows.set(actor, state);
+        this._actors.set(actor, state);
         return state;
     }
 
@@ -241,9 +230,8 @@ export default class ShadeInactiveWindowsExtension extends Extension {
 
         const duration = this._settings.get_int('fade-duration');
 
-        // Keep the offscreen effect out of the focused window's render path
-        // whenever it is already fully restored. Duration 0 intentionally
-        // applies the new setting immediately without creating a Timeline.
+        // Apply immediately if duration is 0 or brightness already matches
+        // Disable the effect at normal brightness to avoid extra rendering
         if (duration === 0 || Math.abs(start - target) < 0.001) {
             state.effect.set_brightness(target);
             state.effect.enabled = target !== 0.0;
@@ -258,9 +246,8 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         state.timeline = timeline;
 
         state.frameSignal = timeline.connect('new-frame', () => {
-            // Ignore stale callbacks after replacement/cleanup.
-            if (!this._windows || this._windows.get(actor) !== state ||
-                state.timeline !== timeline)
+            // Stop updating if the extension, window state, or animation is no longer active.
+            if (!this._actors || this._actors.get(actor) !== state || state.timeline !== timeline)
                 return;
 
             const progress = timeline.get_progress();
@@ -269,14 +256,13 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         });
 
         state.completedSignal = timeline.connect('completed', () => {
-            if (!this._windows || this._windows.get(actor) !== state ||
+            if (!this._actors || this._actors.get(actor) !== state ||
                 state.timeline !== timeline)
                 return;
 
             state.effect.set_brightness(target);
 
-            // Once the focused window reaches normal brightness, remove
-            // the offscreen effect from the render path entirely.
+            // Disable the effect once normal brightness is restored
             if (target === 0.0)
                 state.effect.enabled = false;
 
@@ -298,8 +284,6 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         if (!timeline)
             return;
 
-        // Clear state first so any synchronous signal caused by stop() is
-        // recognized as stale.
         if (state.timeline === timeline)
             state.timeline = null;
 
@@ -317,19 +301,20 @@ export default class ShadeInactiveWindowsExtension extends Extension {
     }
 
     _forgetActor(actor) {
-        if (!actor || !this._windows)
+        if (!actor || !this._actors)
             return;
 
-        const state = this._windows.get(actor);
+        const state = this._actors.get(actor);
         if (!state)
             return;
 
         this._removeState(actor, state);
-        this._windows.delete(actor);
+        this._actors.delete(actor);
     }
 
     _removeState(actor, state) {
         this._stopAnimation(state);
+        actor.disconnect(state.destroySignal);
 
         state.effect.enabled = false;
         actor.remove_effect(state.effect);
