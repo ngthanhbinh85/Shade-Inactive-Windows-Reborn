@@ -40,10 +40,7 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
         this._renderedExcludedApps = [];
         this._installedApps = this._getInstalledApps();
 
-        const page = new Adw.PreferencesPage({
-            title: this.metadata.name + "*",
-            icon_name: 'preferences-desktop-display-symbolic',
-        });
+        const page = new Adw.PreferencesPage();
 
         // Shading
         const shadingGroup = new Adw.PreferencesGroup({
@@ -220,7 +217,6 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
             this._renderExcludedRows();
         });
         
-        
         // About
         const aboutGroup = new Adw.PreferencesGroup();
         const aboutRow = new Adw.ActionRow({title: 'About', activatable: true});
@@ -229,7 +225,6 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
         aboutGroup.add(aboutRow);
         page.add(aboutGroup);
 
-  
         window.connect('close-request', () => {
             if (this._settingsChangedId) {
                 this._settings.disconnect(this._settingsChangedId);
@@ -237,6 +232,7 @@ export default class ShadeInactiveWindowsPreferences extends ExtensionPreference
             }
             return false;
         });
+
     }
 
     _createAppFactory() {
