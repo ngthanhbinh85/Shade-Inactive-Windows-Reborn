@@ -59,9 +59,13 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         this._reloadSettings();
 
         this._connect(this._settings, 'changed', (_settings, key) => {
+            if (key === 'fade-duration') {
+                this._duration = this._settings.get_int('fade-duration');
+                return;
+            }
+
             this._reloadSettings();
-            if (key !== 'fade-duration')
-                this._refresh();
+            this._refresh();
         });
         this._connect(global.display, 'notify::focus-window', () => {
             const previous = this._focusedActor;
