@@ -3,7 +3,7 @@
   "uuid": "shade-inactive-windows-reborn@binhnguyensoft.com",
   "name": "Shade Inactive Windows Reborn",
   "description": "Shades inactive windows with customizable shade level, transition duration, and app exclusion list. Rewritten and modernized version inspired by the original Shade Inactive Windows extension by hepaajan.",
-  "settings-schema": "org.gnome.shell.extensions.shade-inactive-windows-reborn-binhnguyensoft-com",
+  "settings-schema": "org.gnome.shell.extensions.shade-inactive-windows-reborn",
   "url": "https://github.com/ngthanhbinh85/shade-inactive-windows-reborn",
   "version-name": "1.0.2"
 }

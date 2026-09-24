@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-  <schema id="org.gnome.shell.extensions.shade-inactive-windows-reborn-binhnguyensoft-com" path="/org/gnome/shell/extensions/shade-inactive-windows-reborn-binhnguyensoft-com/">
+  <schema id="org.gnome.shell.extensions.shade-inactive-windows-reborn" path="/org/gnome/shell/extensions/shade-inactive-windows-reborn/">
     <key name="shade-level" type="i">
       <range min="10" max="80"/>
       <default>30</default>
