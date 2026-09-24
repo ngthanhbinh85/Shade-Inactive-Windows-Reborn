@@ -4,7 +4,7 @@ A modernized GNOME Shell extension that dims/shades inactive windows to help you
 
 ## Screenshot
 
-![Shade Inactive Windows Reborn Screenshot](screenshot.webp)
+<img src="./img/image.png" alt="Mô tả ảnh" width="60%">
 
 ## Features & Improvements
 
