@@ -2,6 +2,10 @@
 
 A modernized GNOME Shell extension that dims/shades inactive windows to help you focus on your active workspace.
 
+## Screenshot
+
+![Shade Inactive Windows Reborn Screenshot](screenshot.webp)
+
 ## Features & Improvements
 
 * **Modern Codebase**: Completely rewritten for modern GNOME Shell versions (ESM support).
