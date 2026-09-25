@@ -20,9 +20,11 @@ A modernized GNOME Shell extension that dims/shades inactive windows to help you
 Install via Extension Manager (Recommended)
 
 1. Open **Extension Manager**. If you don't have it installed yet:
+   
    ```bash
    flatpak install flathub com.mattjakeman.ExtensionManager
    ```
+   
 2. Switch to the **Browse** tab.
 3. Search for **Shade Inactive Windows Reborn**.
 4. Click **Install**.
@@ -33,4 +35,4 @@ This project is completely rewritten based on the concept of Shade Inactive Wind
 
 ## License
 
-GNU General Public License v3.0 or later (GPL-3.0-or-later).
+GNU General Public License v3.0 or later.
