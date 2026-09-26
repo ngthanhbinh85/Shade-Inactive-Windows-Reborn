@@ -34,6 +34,8 @@ Install via Extension Manager (Recommended)
 
 This project is completely rewritten based on the concept of Shade Inactive Windows, originally created by [hepaajan](https://github.com/hepaajan/shade-inactive-windows).
 
+Special thanks to **Just Perfection** and the **GNOME Shell Extensions review team** for their thoughtful reviews and constructive feedback.
+
 ## License
 
 GNU General Public License v3.0 or later.
@@ -53,7 +55,7 @@ Tiện ích mở rộng GNOME Shell giúp làm mờ/làm tối các cửa sổ k
 * **Tùy chỉnh độ tối & thời gian hiệu ứng làm tối**: cho phép điều chỉnh mức độ hiệu ứng làm tối và thời gian chạy hiệu ứng.
 * **Loại trừ ứng dụng**: cho phép chỉ định các app ngoại lệ không bị làm tối, hữu ích cho các app như xem ảnh, xem tài liệu,...
 
-Cài đặt
+## Cài đặt
 
 **[Tải trên trang GNOME Extensions](https://extensions.gnome.org/extension/10871/shade-inactive-windows-reborn/)**
 
@@ -71,7 +73,9 @@ Cài đặt thông qua Extension Manager (Khuyên dùng)
 
 ## Lời cảm ơn & Ghi nhận
 
-Dự án này được viết lại dựa trên ý tưởng từ extension gốc Shade Inactive Windows, ban đầu được tạo bởi hepaajan.
+Dự án này được viết lại dựa trên ý tưởng từ extension gốc Shade Inactive Windows, ban đầu được tạo bởi [hepaajan](https://github.com/hepaajan/shade-inactive-windows).
+
+Xin gửi lời cảm ơn đặc biệt đến **đội ngũ kiểm duyệt GNOME Extensions**, đặc biệt là **Just Perfection**, vì những góp ý và sự hỗ trợ trong quá trình duyệt extension.
 
 ## Giấy phép
 
