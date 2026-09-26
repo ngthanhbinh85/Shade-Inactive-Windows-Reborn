@@ -8,7 +8,7 @@ A modernized GNOME Shell extension that dims/shades inactive windows to help you
 
 ## Features & Improvements
 
-* **Modern Codebase**: Completely rewritten for modern GNOME Shell versions (ESM support).
+* **Modern Codebase**: Completely rewritten for modern GNOME Shell versions (45 and above).
 * **Customizable Shading & Transitions**: Adjust the dimming/shade level of inactive windows and transition animation duration.
 * **App Exclusion**: Easily exempt specific applications from being shaded.
 
