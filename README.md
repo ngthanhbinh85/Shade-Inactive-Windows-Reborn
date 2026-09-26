@@ -49,11 +49,9 @@ Tiện ích mở rộng GNOME Shell giúp làm mờ/làm tối các cửa sổ k
 
 ## Tính năng & Cải tiến
 
-Viết lại mã nguồn: viết lại theo chuẩn GJS mới cho các phiên bản GNOME Shell đời mới (từ 45 trở lên).
-
-Tùy chỉnh độ tối & hiệu ứng làm tối: cho phép điều chỉnh mức độ hiệu ứng làm tối và thời gian chạy hiệu ứng.
-
-Loại trừ ứng dụng: cho phép chỉ định các app ngoại lệ không bị làm tối, hữu ích cho các app như xem ảnh, xem tài liệu,...
+* **Viết lại mã nguồn**: viết lại theo chuẩn GJS mới cho các phiên bản GNOME Shell đời mới (từ 45 trở lên).
+* **Tùy chỉnh độ tối & thời gian hiệu ứng làm tối**: cho phép điều chỉnh mức độ hiệu ứng làm tối và thời gian chạy hiệu ứng.
+* **Loại trừ ứng dụng**: cho phép chỉ định các app ngoại lệ không bị làm tối, hữu ích cho các app như xem ảnh, xem tài liệu,...
 
 Cài đặt
 
