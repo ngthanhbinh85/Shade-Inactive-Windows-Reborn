@@ -5,18 +5,47 @@
       <range min="10" max="80"/>
       <default>30</default>
       <summary>Shade level</summary>
-      <description>Brightness reduction in percent (10 = slightly dark, 80 = very dark).</description>
+      <description>Brightness reduction in percent.</description>
     </key>
     <key name="fade-duration" type="i">
       <range min="0" max="1000"/>
       <default>200</default>
       <summary>Fade duration</summary>
-      <description>Duration of the brightness transition (in milliseconds).</description>
+      <description>Duration of transition in milliseconds.</description>
     </key>
     <key name="excluded-apps" type="as">
       <default>[]</default>
       <summary>Excluded apps</summary>
       <description>App IDs or WM_CLASS identifiers for applications that should not be shaded.</description>
+    </key>
+    <!-- Add for shadow -->
+    <key name="shadow-enabled" type="b">
+      <default>true</default>
+      <summary>Enable active window shadow</summary>
+      <description>Enable or disable the shadow around the active window.</description>
+    </key>
+    <key name="shadow-width" type="i">
+      <range min="0" max="100"/>
+      <default>50</default>
+      <summary>Shadow width</summary>
+      <description>How far the shadow extends beyond the window edges (in pixels).</description>
+    </key>
+    <key name="shadow-opacity" type="i">
+      <range min="0" max="100"/>
+      <default>50</default>
+      <summary>Shadow opacity</summary>
+      <description>Opacity at the window edge in percent.</description>
+    </key>
+    <key name="shadow-radius" type="i">
+      <range min="0" max="30"/>
+      <default>15</default>
+      <summary>Corner radius (px)</summary>
+      <description>Match the window corners in pixels.</description>
+    </key>
+    <key name="shadow-color" type="s">
+      <default>'#000000'</default>
+      <summary>Shadow color</summary>
+      <description>Shadow color.</description>
     </key>
   </schema>
 </schemalist>

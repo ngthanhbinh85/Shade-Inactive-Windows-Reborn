@@ -1,0 +1,180 @@
+# Vietnamese translation for PACKAGE.
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Binh <ngthanhbinh85@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Shade Inactive Windows Reborn 1.0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-27 19:55+0700\n"
+"PO-Revision-Date: 2026-09-27 20:04+0700\n"
+"Last-Translator: Binh <ngthanhbinh85@gmail.com>\n"
+"Language-Team: Vietnamese\n"
+"Language: vi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Gtranslator 51.0\n"
+
+#: prefs.js:52
+msgid "Shading"
+msgstr "Làm tối"
+
+#: prefs.js:53
+msgid "Adjust how inactive windows are shaded."
+msgstr "Mức độ làm tối các cửa sổ không hoạt động."
+
+#: prefs.js:64
+msgid "Shade level"
+msgstr "Mức độ tối"
+
+#: prefs.js:65
+msgid "Brightness reduction in percent (10 = slightly dark, 80 = very dark)."
+msgstr "Độ tối theo phần trăm (10 = hơi tối, 80 = rất tối)."
+
+#: prefs.js:82
+msgid "Fade duration"
+msgstr "Thời gian hiệu ứng"
+
+#: prefs.js:83
+msgid "Duration of the brightness transition (in milliseconds)."
+msgstr "Thời gian chuyển đổi độ sáng (tính bằng mili-giây)."
+
+#: prefs.js:98
+msgid "Excluded apps"
+msgstr "Các ứng dụng ngoại lệ"
+
+#: prefs.js:99
+msgid ""
+"These apps remain at normal brightness even when inactive. Useful for media "
+"players, image viewers, or reference documents."
+msgstr ""
+"Các ứng dụng này sẽ giữ nguyên độ sáng bình thường ngay cả khi không hoạt "
+"động. Hữu ích cho trình phát video, trình xem ảnh hoặc tài liệu tham khảo."
+
+#: prefs.js:124
+msgid "Add selected app"
+msgstr "Thêm ứng dụng đã chọn"
+
+#: prefs.js:133
+msgid "Installed apps"
+msgstr "Ứng dụng đã cài đặt"
+
+#: prefs.js:141
+msgid "Custom app ID/WM_CLASS"
+msgstr "Tùy chỉnh App ID/WM_CLASS"
+
+#: prefs.js:142
+msgid ""
+"Enter an identifier for AppImage, Wine, XWayland, or other unlisted apps."
+msgstr ""
+"Nhập định danh cho AppImage, Wine, XWayland hoặc các ứng dụng khác không "
+"được liệt kê trong danh sách trên."
+
+#: prefs.js:146
+msgid "example.desktop or WM_CLASS"
+msgstr "example.desktop hoặc WM_CLASS"
+
+#: prefs.js:154
+msgid "How to find an app ID or WM_CLASS"
+msgstr "Cách tìm App ID hoặc WM_CLASS"
+
+#: prefs.js:163
+msgid "Finding an app ID or WM_CLASS"
+msgstr "Tìm App ID hoặc WM_CLASS"
+
+#: prefs.js:170
+msgid ""
+"Desktop app ID: Use the app's .desktop filename. You can find it in:\n"
+"\n"
+"   ~/.local/share/applications\n"
+"   /usr/share/applications\n"
+"\n"
+"   Example: org.mozilla.firefox.desktop\n"
+"\n"
+"WM_CLASS on X11 or XWayland: Run \"xprop WM_CLASS\" in Terminal, then click "
+"the target window.\n"
+"\n"
+"Wayland: Press Alt+F2, enter \"lg\", open the Windows section, and find the "
+"app ID or WM_CLASS."
+msgstr ""
+"Desktop App ID: Sử dụng tên tệp .desktop của app. Bạn có thể tìm trong:\n"
+"\n"
+"   ~/.local/share/applications\n"
+"   /usr/share/applications\n"
+"\n"
+"   Ví dụ: org.mozilla.firefox.desktop\n"
+"\n"
+"WM_CLASS trên X11 hoặc XWayland: Chạy lệnh \"xprop WM_CLASS\" trong "
+"Terminal, sau đó nhấp vào cửa sổ app mong muốn.\n"
+"\n"
+"Wayland: Nhấn Alt+F2, nhập \"lg\", mở mục Windows để tìm App ID hoặc "
+"WM_CLASS."
+
+#: prefs.js:183
+msgid "Close"
+msgstr "Đóng"
+
+#: prefs.js:191
+msgid "Add custom identifier"
+msgstr "Thêm định danh app"
+
+#: prefs.js:218
+msgid "Active window shadow"
+msgstr "Bóng của cửa sổ đang hoạt động"
+
+#: prefs.js:219
+msgid ""
+"GNOME already renders a default shadow, but this option draws an extra layer "
+"around the active window to make it more prominent."
+msgstr ""
+"GNOME đã có lớp đổ bóng mặc định, nhưng tùy chọn này sẽ vẽ thêm một lớp bóng "
+"nữa quanh cửa sổ đang hoạt động để làm nó nổi bật hơn."
+
+#: prefs.js:223
+msgid "Enable active window shadow"
+msgstr "Bật đổ bóng cửa sổ đang hoạt động"
+
+#: prefs.js:234
+msgid "Shadow width"
+msgstr "Độ rộng bóng"
+
+#: prefs.js:235
+msgid "How far the shadow extends beyond the window edges (in pixels)."
+msgstr "Khoảng cách (px) bóng lan ra ngoài tính từ viền cửa sổ."
+
+#: prefs.js:250
+msgid "Shadow opacity"
+msgstr "Độ mờ của bóng"
+
+#: prefs.js:251
+msgid ""
+"Opacity at the window edge in percent, fading to zero outward.\n"
+"Recommended to increase in dark mode and decrease in light mode."
+msgstr ""
+"Độ mờ (%) tại mép cửa sổ, đậm ở trong và mờ dần về 0 khi ra ngoài.\n"
+"Nên tăng khi ở chế độ tối và giảm khi ở chế độ sáng."
+
+#: prefs.js:266
+msgid "Corner radius"
+msgstr "Bán kính bo góc"
+
+#: prefs.js:267
+msgid "Match the window corners in pixels; use 0 for square corners."
+msgstr ""
+"Chỉnh để khớp với độ bo góc của cửa sổ để không có khoảng trống ở những góc "
+"bo (px)."
+
+#: prefs.js:275
+msgid "Shadow color"
+msgstr "Màu bóng đổ"
+
+#: prefs.js:325
+msgid "About"
+msgstr "Giới thiệu"
+
+#: prefs.js:458
+msgid "Remove from exclusions"
+msgstr "Xóa khỏi danh sách ngoại lệ"

@@ -17,6 +17,11 @@ import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import GObject from 'gi://GObject';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
+ // 1.0.3 added, for drawing active window shadow 
+import Cairo from 'gi://cairo';
+import Cogl from 'gi://Cogl';
+import St from 'gi://St';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 const EFFECT_NAME = 'shade-inactive-windows-reborn-binhnguyensoft-com';
 const SHADE_PROPERTY = `@effects.${EFFECT_NAME}.shade-value`;
@@ -56,6 +61,9 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         this._focusedActor = null;
         this._windowTracker = Shell.WindowTracker.get_default();
         this._settings = this.getSettings();
+
+        this._initShadow(); //
+
         this._reloadSettings();
 
         this._connect(this._settings, 'changed', (_settings, key) => {
@@ -94,6 +102,17 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         this._settings = null;
         this._windowTracker = null;
         this._excludedApps = null;
+        
+        //
+        this._disconnectShadow();
+        if (this._repaintId) {
+            this._actorShadow.disconnect(this._repaintId);
+            this._repaintId = null;
+        }
+        this._bindShadowX = this._bindShadowY = null;
+        this._actorShadow.destroy();
+        this._actorShadow = this._focusActorShadow = this._windowShadow = null;
+        this._signalsShadow = this._shadowFrame = this._shadowColor = null;
     }
 
     _connect(object, signal, callback) {
@@ -177,5 +196,201 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         state.effect.enabled = false;
         actor.remove_effect(state.effect);
     }
-}
 
+    //
+    _initShadow() {
+        this._signalsShadow = [];
+        this._actorShadow = new St.DrawingArea({reactive: false, can_focus: false, visible: false});
+        global.window_group.add_child(this._actorShadow);
+
+        this._bindShadowX = new Clutter.BindConstraint({coordinate: Clutter.BindCoordinate.X});
+        this._bindShadowY = new Clutter.BindConstraint({coordinate: Clutter.BindCoordinate.Y});
+        this._actorShadow.add_constraint(this._bindShadowX);
+        this._actorShadow.add_constraint(this._bindShadowY);
+
+        this._repaintId = this._actorShadow.connect('repaint', () => this._drawShadow());
+        
+        this._connect(global.display, 'notify::focus-window', () => this._focusShadow());
+        this._connect(global.display, 'restacked', () => this._syncShadow());
+        this._connect(global.window_manager, 'map', () => this._focusShadow());
+        this._connect(global.window_manager, 'switch-workspace', () => this._syncShadow());
+        this._connect(Main.overview, 'showing', () => this._syncShadow());
+        this._connect(Main.overview, 'hidden', () => this._syncShadow());
+        this._connect(Main.sessionMode, 'updated', () => this._syncShadow());
+        this._connect(this._settings, 'changed', (_settings, key) => {
+            if (key.startsWith('shadow-')) {
+                this._readShadowSettings();
+                this._syncShadow(true);
+                this._actorShadow.queue_repaint();
+            }
+        });
+        this._readShadowSettings();
+        this._focusShadow();
+    }
+    
+    _drawShadow() {
+        const cr = this._actorShadow.get_context();
+        try {
+            cr.setOperator(Cairo.Operator.CLEAR);
+            cr.paint();
+            cr.setOperator(Cairo.Operator.OVER);
+
+            if (!this._shadowFrame)
+                return;
+
+            const {width, height} = this._shadowFrame;
+            const pad = this._shadowPad;
+            const [sw, sh] = this._actorShadow.get_surface_size();
+
+            cr.rectangle(0, 0, sw, sh);
+            this._roundedRectShadow(cr, pad, pad, width, height, this._shadowRadius);
+            cr.setFillRule(Cairo.FillRule.EVEN_ODD);
+            cr.clip();
+            cr.setFillRule(Cairo.FillRule.WINDING);
+
+            const scolor = this._shadowColor;
+            const swidth = this._shadowWidth;
+            
+            const steps = Math.min(Math.max(swidth, 8), 24);
+            const stepAlpha = (this._shadowOpacity / steps) * 1.5;
+            
+            for (let i = 0; i < steps; i++) {
+                const t = i / steps;
+                
+                const extent = swidth * t;
+
+                const factor = (1 - t) * (1 - t);
+                const currentAlpha = stepAlpha * factor;
+
+                cr.setSourceRGBA(
+                    scolor.red / 255, 
+                    scolor.green / 255, 
+                    scolor.blue / 255, 
+                    currentAlpha
+                );
+
+                this._roundedRectShadow(
+                    cr, 
+                    pad - extent, 
+                    pad - extent,
+                    width + extent * 2, 
+                    height + extent * 2, 
+                    this._shadowRadius + extent
+                );
+                cr.fill();
+            }
+        } finally {
+            cr.$dispose();
+        }
+    }
+    
+    _roundedRectShadow(cr, x, y, width, height, radius) {
+        const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+        cr.newSubPath();
+        cr.arc(x + width - r, y + r, r, -Math.PI / 2, 0);
+        cr.arc(x + width - r, y + height - r, r, 0, Math.PI / 2);
+        cr.arc(x + r, y + height - r, r, Math.PI / 2, Math.PI);
+        cr.arc(x + r, y + r, r, Math.PI, Math.PI * 1.5);
+        cr.closePath();
+    }
+    
+    _focusShadow() {
+        const window = global.display.focus_window;
+        const actor = window?.get_compositor_private();
+        if (actor && actor === this._focusActorShadow) {
+            this._syncShadow();
+            return;
+        }
+        this._disconnectShadow();
+        this._windowShadow = window;
+        this._focusActorShadow = actor;
+        if (actor) {
+
+            this._bindShadowX.set_source(actor);
+            this._bindShadowY.set_source(actor);
+            this._shadowFrame = null;
+            this._connectShadow(window, 'size-changed', () => this._syncShadow(true));
+            this._connectShadow(actor, 'notify::width', () => this._syncShadow(true));
+            this._connectShadow(actor, 'notify::height', () => this._syncShadow(true));
+
+            for (const signal of ['workspace-changed',
+                'notify::minimized', 'notify::fullscreen'])
+                this._connectShadow(window, signal, () => this._syncShadow());
+            for (const property of ['visible', 'mapped', 'opacity',
+                'scale-x', 'scale-y', 'translation-x', 'translation-y'])
+                this._connectShadow(actor, `notify::${property}`, () => this._syncShadow());
+            this._connectShadow(actor, 'destroy', () => {
+                this._disconnectShadow();
+                this._focusActorShadow = null;
+                this._windowShadow = null;
+                this._actorShadow.hide();
+            });
+        }
+        this._syncShadow();
+    }
+
+    _syncShadow(updateGeometry = false) {
+
+        if (updateGeometry)
+            this._shadowFrame = null;
+
+        const actor = this._focusActorShadow;
+        const window = this._windowShadow;
+        const parent = actor?.get_parent();
+        const types = [Meta.WindowType.NORMAL, Meta.WindowType.DIALOG, Meta.WindowType.MODAL_DIALOG];
+        
+        if (!this._shadowEnabled || !window || !parent || parent !== global.window_group ||
+            !actor.visible || !actor.mapped || window.minimized || window.is_fullscreen() ||
+            window.is_maximized() || !window.located_on_workspace(global.workspace_manager.get_active_workspace()) ||
+            !types.includes(window.get_window_type()) || Main.overview.visible ||
+            Main.sessionMode.isLocked || actor.scale_x !== 1 || actor.scale_y !== 1 ||
+            actor.translation_x !== 0 || actor.translation_y !== 0) {
+            
+            this._actorShadow.hide();
+            return;
+        }
+        parent.set_child_below_sibling(this._actorShadow, actor);
+
+        if (updateGeometry || !this._shadowFrame) {
+            const frame = window.get_frame_rect();
+            const buffer = window.get_buffer_rect();
+            const pad = this._shadowWidth + 2;
+            this._shadowFrame = frame;
+            this._shadowPad = pad;
+            this._bindShadowX.set_offset(frame.x - buffer.x - pad);
+            this._bindShadowY.set_offset(frame.y - buffer.y - pad);
+            this._actorShadow.set_size(frame.width + pad * 2, frame.height + pad * 2);
+        }
+
+        this._actorShadow.opacity = actor.opacity;
+        this._actorShadow.show();
+    }
+    
+    _readShadowSettings() {
+        this._shadowEnabled = this._settings.get_boolean('shadow-enabled');
+        this._shadowWidth = this._settings.get_int('shadow-width');
+        this._shadowOpacity = this._settings.get_int('shadow-opacity') / 100;
+        this._shadowRadius = this._settings.get_int('shadow-radius');
+
+        const [valid, color] = Cogl.Color.from_string(this._settings.get_string('shadow-color'));
+        if (valid) {
+            this._shadowColor = color;
+        } else {
+            this._shadowColor = Cogl.Color.from_string('#000000')[1];
+        }
+    }
+
+    _connectShadow(object, signal, callback) {
+        this._signalsShadow.push([object, object.connect(signal, callback)]);
+    }
+
+    _disconnectShadow() {
+        this._bindShadowX.set_source(null);
+        this._bindShadowY.set_source(null);
+
+        for (const [object, id] of this._signalsShadow)
+            object.disconnect(id);
+        this._signalsShadow.length = 0;
+    }
+
+}

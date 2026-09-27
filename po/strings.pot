@@ -1,0 +1,157 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-27 19:55+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: prefs.js:52
+msgid "Shading"
+msgstr ""
+
+#: prefs.js:53
+msgid "Adjust how inactive windows are shaded."
+msgstr ""
+
+#: prefs.js:64
+msgid "Shade level"
+msgstr ""
+
+#: prefs.js:65
+msgid "Brightness reduction in percent (10 = slightly dark, 80 = very dark)."
+msgstr ""
+
+#: prefs.js:82
+msgid "Fade duration"
+msgstr ""
+
+#: prefs.js:83
+msgid "Duration of the brightness transition (in milliseconds)."
+msgstr ""
+
+#: prefs.js:98
+msgid "Excluded apps"
+msgstr ""
+
+#: prefs.js:99
+msgid ""
+"These apps remain at normal brightness even when inactive. Useful for media "
+"players, image viewers, or reference documents."
+msgstr ""
+
+#: prefs.js:124
+msgid "Add selected app"
+msgstr ""
+
+#: prefs.js:133
+msgid "Installed apps"
+msgstr ""
+
+#: prefs.js:141
+msgid "Custom app ID/WM_CLASS"
+msgstr ""
+
+#: prefs.js:142
+msgid ""
+"Enter an identifier for AppImage, Wine, XWayland, or other unlisted apps."
+msgstr ""
+
+#: prefs.js:146
+msgid "example.desktop or WM_CLASS"
+msgstr ""
+
+#: prefs.js:154
+msgid "How to find an app ID or WM_CLASS"
+msgstr ""
+
+#: prefs.js:163
+msgid "Finding an app ID or WM_CLASS"
+msgstr ""
+
+#: prefs.js:170
+msgid ""
+"Desktop app ID: Use the app's .desktop filename. You can find it in:\n"
+"\n"
+"   ~/.local/share/applications\n"
+"   /usr/share/applications\n"
+"\n"
+"   Example: org.mozilla.firefox.desktop\n"
+"\n"
+"WM_CLASS on X11 or XWayland: Run \"xprop WM_CLASS\" in Terminal, then click "
+"the target window.\n"
+"\n"
+"Wayland: Press Alt+F2, enter \"lg\", open the Windows section, and find the "
+"app ID or WM_CLASS."
+msgstr ""
+
+#: prefs.js:183
+msgid "Close"
+msgstr ""
+
+#: prefs.js:191
+msgid "Add custom identifier"
+msgstr ""
+
+#: prefs.js:218
+msgid "Active window shadow"
+msgstr ""
+
+#: prefs.js:219
+msgid ""
+"GNOME already renders a default shadow, but this option draws an extra layer "
+"around the active window to make it more prominent."
+msgstr ""
+
+#: prefs.js:223
+msgid "Enable active window shadow"
+msgstr ""
+
+#: prefs.js:234
+msgid "Shadow width"
+msgstr ""
+
+#: prefs.js:235
+msgid "How far the shadow extends beyond the window edges (in pixels)."
+msgstr ""
+
+#: prefs.js:250
+msgid "Shadow opacity"
+msgstr ""
+
+#: prefs.js:251
+msgid ""
+"Opacity at the window edge in percent, fading to zero outward.\n"
+"Recommended to increase in dark mode and decrease in light mode."
+msgstr ""
+
+#: prefs.js:266
+msgid "Corner radius"
+msgstr ""
+
+#: prefs.js:267
+msgid "Match the window corners in pixels; use 0 for square corners."
+msgstr ""
+
+#: prefs.js:275
+msgid "Shadow color"
+msgstr ""
+
+#: prefs.js:325
+msgid "About"
+msgstr ""
+
+#: prefs.js:458
+msgid "Remove from exclusions"
+msgstr ""
