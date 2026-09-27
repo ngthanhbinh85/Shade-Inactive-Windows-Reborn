@@ -2,7 +2,7 @@
 
 (Tiếng Việt bên dưới)
 
-A modernized GNOME Shell extension that dims/shades inactive windows to help you focus on your active workspace.
+A modernized GNOME Shell extension that dims/shades inactive windows to help you focus on your active workspace. You can also amplify the drop shadow on the active window to make it pop.
 
 ## Screenshot
 
@@ -13,6 +13,7 @@ A modernized GNOME Shell extension that dims/shades inactive windows to help you
 * **Modern Codebase**: Completely rewritten for modern GNOME Shell versions (45 and above).
 * **Customizable Shading & Transitions**: Adjust the dimming/shade level of inactive windows and transition animation duration.
 * **App Exclusion**: Easily exempt specific applications from being shaded.
+* **Enhanced Focus**: Boost the drop shadow of the active window to make it truly stand out.
 
 ## Installation
 
@@ -43,7 +44,7 @@ GNU General Public License v3.0 or later.
 ---
 ## Tiếng Việt
 
-Tiện ích mở rộng GNOME Shell giúp làm mờ/làm tối các cửa sổ không hoạt động, giúp bạn tập trung tối đa vào không gian làm việc hiện tại.
+Tiện ích mở rộng GNOME Shell giúp làm mờ/làm tối các cửa sổ không hoạt động, giúp bạn tập trung tối đa vào không gian làm việc hiện tại. Bạn cũng có thể tăng bóng đổ cho cửa sổ active để làm nó nổi bật hơn.
 
 ## Ảnh chụp màn hình
 
@@ -53,7 +54,8 @@ Tiện ích mở rộng GNOME Shell giúp làm mờ/làm tối các cửa sổ k
 
 * **Viết lại mã nguồn**: viết lại theo chuẩn GJS mới cho các phiên bản GNOME Shell đời mới (từ 45 trở lên).
 * **Tùy chỉnh độ tối & thời gian hiệu ứng làm tối**: cho phép điều chỉnh mức độ hiệu ứng làm tối và thời gian chạy hiệu ứng.
-* **Loại trừ ứng dụng**: cho phép chỉ định các app ngoại lệ không bị làm tối, hữu ích cho các app như xem ảnh, xem tài liệu,...
+* **Ứng dụng ngoại lệ**: cho phép chỉ định các app ngoại lệ không bị làm tối, hữu ích cho các app như xem ảnh, xem tài liệu,...
+* **Tăng bóng đổ**: tăng cường bóng đổ cho cửa sổ đang hoạt động để làm nó nổi bật hơn.
 
 ## Cài đặt
 
