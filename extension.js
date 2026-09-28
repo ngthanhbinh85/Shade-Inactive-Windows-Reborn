@@ -26,6 +26,9 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 const EFFECT_NAME = 'shade-inactive-windows-reborn-binhnguyensoft-com';
 const SHADE_PROPERTY = `@effects.${EFFECT_NAME}.shade-value`;
 
+// Fix for Fedora Workstation 39: Cogl.Color.from_string is unavailable 
+const Color = Cogl.Color?.from_string ? Cogl.Color : Clutter.Color;
+
 const PreviewSafeBrightnessEffect = GObject.registerClass({
     Properties: {
         'shade-value': GObject.ParamSpec.double(
@@ -341,7 +344,8 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         
         if (!this._shadowEnabled || !window || !parent || parent !== global.window_group ||
             !actor.visible || !actor.mapped || window.minimized || window.is_fullscreen() ||
-            window.is_maximized() || !window.located_on_workspace(global.workspace_manager.get_active_workspace()) ||
+            (window.maximized_horizontally && window.maximized_vertically) ||
+            !window.located_on_workspace(global.workspace_manager.get_active_workspace()) ||
             !types.includes(window.get_window_type()) || Main.overview.visible ||
             Main.sessionMode.isLocked || actor.scale_x !== 1 || actor.scale_y !== 1 ||
             actor.translation_x !== 0 || actor.translation_y !== 0) {
@@ -372,11 +376,11 @@ export default class ShadeInactiveWindowsExtension extends Extension {
         this._shadowOpacity = this._settings.get_int('shadow-opacity') / 100;
         this._shadowRadius = this._settings.get_int('shadow-radius');
 
-        const [valid, color] = Cogl.Color.from_string(this._settings.get_string('shadow-color'));
+        const [valid, color] = Color.from_string(this._settings.get_string('shadow-color'));
         if (valid) {
             this._shadowColor = color;
         } else {
-            this._shadowColor = Cogl.Color.from_string('#000000')[1];
+            this._shadowColor = Color.from_string('#000000')[1];
         }
     }
 
